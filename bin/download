@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+current_script_path=${BASH_SOURCE[0]}
+plugin_dir=$(dirname "$(dirname "$current_script_path")")
+
+# shellcheck source=./lib/utils.bash
+source "${plugin_dir}/lib/utils.bash"
+
+mkdir -p "$ASDF_DOWNLOAD_PATH"
+
+# Detect OS and architecture for filename
+os=$(uname -s | tr '[:upper:]' '[:lower:]')
+arch=$(uname -m)
+
+case "$os" in
+darwin)
+	case "$arch" in
+	arm64) arch_suffix="arm64" ;;
+	x86_64) arch_suffix="amd64" ;;
+	*) fail "Unsupported macOS architecture: $arch" ;;
+	esac
+	os_suffix="darwin"
+	;;
+linux)
+	case "$arch" in
+	x86_64) arch_suffix="amd64" ;;
+	arm64) arch_suffix="arm64" ;;
+	*) fail "Unsupported Linux architecture: $arch" ;;
+	esac
+	os_suffix="linux"
+	;;
+*)
+	fail "Unsupported operating system: $os"
+	;;
+esac
+
+release_file="$ASDF_DOWNLOAD_PATH/buildx-v${ASDF_INSTALL_VERSION}.${os_suffix}-${arch_suffix}"
+
+# Download binary file to the download directory
+download_release "$ASDF_INSTALL_VERSION" "$release_file"
