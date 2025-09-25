@@ -105,6 +105,20 @@ install_version() {
 		else
 			fail "Installation verification failed"
 		fi
+
+		echo "Setting up Docker CLI plugin integration..."
+
+		docker_plugins_dir="$HOME/.docker/cli-plugins"
+		mkdir -p "$docker_plugins_dir"
+
+		buildx_symlink="$docker_plugins_dir/docker-buildx"
+		if [[ -L "$buildx_symlink" ]]; then
+			rm "$buildx_symlink"
+		fi
+		ln -s "${install_path}/docker-buildx" "$buildx_symlink"
+
+		echo "Docker CLI plugin integration completed!"
+		echo "You can now use 'docker buildx' commands directly."
 	) || (
 		rm -rf "$install_path"
 		fail "An error occurred while installing $TOOL_NAME $version."
